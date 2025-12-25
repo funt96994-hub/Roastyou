@@ -1,0 +1,2399 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roastyou - AI Powered Hinglish Roasts</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f0f0f;
+      color: #ffffff;
+    }
+
+    .main-container {
+      background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+      min-height: 100%;
+    }
+
+    .roast-card {
+      background: #1e1e1e;
+      border: 1px solid #2a2a2a;
+      border-radius: 20px;
+      padding: 40px;
+      transition: border-color 0.3s;
+    }
+
+    .roast-card:hover {
+      border-color: #3a3a3a;
+    }
+
+    .input-box {
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      border-radius: 12px;
+      padding: 16px 20px;
+      width: 100%;
+      font-size: 16px;
+      color: #ffffff;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .input-box:focus {
+      border-color: #FF6B6B;
+      background: #333;
+    }
+
+    .input-box::placeholder {
+      color: #666;
+    }
+
+    .roast-btn {
+      background: linear-gradient(135deg, #FF6B6B, #FF4757);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 16px 32px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .roast-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+    }
+
+    .roast-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .roast-output {
+      background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
+      border: 2px solid #FF6B6B;
+      border-radius: 16px;
+      padding: 32px;
+      font-size: 22px;
+      font-weight: 500;
+      text-align: center;
+      line-height: 1.8;
+      color: #ffffff;
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Make output sticky within the scrollable app so footer remains reachable */
+    #output-container {
+      position: sticky;
+      top: calc(var(--header-height) + var(--tabbar-height) + 12px);
+      left: 0;
+      right: 0;
+      z-index: 850;
+      display: none;
+      padding: 0 20px;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    #output-container.mt-6 {
+      margin-top: 0 !important;
+    }
+
+    #output-container .roast-card {
+      margin: 0 auto;
+      max-width: 800px;
+    }
+
+    .roast-output::before {
+      content: '"';
+      position: absolute;
+      top: 16px;
+      left: 24px;
+      font-size: 60px;
+      color: #FF6B6B;
+      opacity: 0.3;
+      font-family: Georgia, serif;
+    }
+
+    .roast-output::after {
+      content: '"';
+      position: absolute;
+      bottom: -10px;
+      right: 24px;
+      font-size: 60px;
+      color: #FF6B6B;
+      opacity: 0.3;
+      font-family: Georgia, serif;
+    }
+
+    .copy-btn {
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      color: #ffffff;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .copy-btn:hover {
+      background: #333;
+      border-color: #FF6B6B;
+    }
+
+    .category-btn {
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      color: #999;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    .category-btn:hover {
+      background: #333;
+      color: #fff;
+    }
+
+    .category-btn.active {
+      background: #FF6B6B;
+      color: white;
+      border-color: #FF6B6B;
+    }
+
+    .stats-card {
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 32px;
+      font-weight: 700;
+      color: #FF6B6B;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-slide-up {
+      animation: slideUp 0.5s ease-out;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* make the main app its own scroll area so scrollbars start below the fixed header */
+    html, body { height: 100%; }
+    body { overflow: hidden; }
+    :root { --header-height: 88px; }
+    #main-app {
+      position: absolute;
+      top: var(--header-height);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: auto;
+      padding: 24px 20px;
+      -webkit-overflow-scrolling: touch;
+      will-change: transform;
+      /* default scrollbar fallback for Firefox */
+      scrollbar-width: thin;
+      scrollbar-color: #111 transparent;
+    }
+    /* WebKit scrollbar (Chrome, Edge, Safari) - small black line */
+    #main-app::-webkit-scrollbar { width: 8px; height: 8px; }
+    #main-app::-webkit-scrollbar-track { background: transparent; }
+    #main-app::-webkit-scrollbar-thumb {
+      background: linear-gradient(#0b0b0b, #1a1a1a);
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+    /* Upgrade page should use the same full-area scroll container below the header */
+    #upgrade-page {
+      position: absolute;
+      top: var(--header-height);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: auto;
+      padding: 24px 20px 40px 20px;
+      -webkit-overflow-scrolling: touch;
+    }
+    #upgrade-page::-webkit-scrollbar { width: 8px; }
+    #upgrade-page::-webkit-scrollbar-track { background: transparent; }
+    #upgrade-page::-webkit-scrollbar-thumb { background: linear-gradient(#0b0b0b,#171717); border-radius: 999px; border: 1px solid rgba(255,255,255,0.03); }
+
+    /* Plans container should not create a separate scroll; let #upgrade-page handle scrolling */
+    .plans-container {
+      overflow: visible;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-right: 0;
+    }
+    .plans-container::-webkit-scrollbar { width: 8px; }
+    .plans-container::-webkit-scrollbar-track { background: transparent; }
+    .plans-container::-webkit-scrollbar-thumb { background: linear-gradient(#0b0b0b,#171717); border-radius: 999px; border: 1px solid rgba(255,255,255,0.03); }
+    .plans-container { scrollbar-width: thin; scrollbar-color: #111 transparent; }
+
+    /* move history further below header for more breathing room */
+    #history-tab .roast-card { margin-top: 36px; }
+    #history-list { padding-top: 20px; }
+
+    .loading-spinner {
+      border: 3px solid #3a3a3a;
+      border-top: 3px solid #FF6B6B;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      color: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      z-index: 1000;
+      animation: slideUp 0.3s ease-out;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+
+    .history-item {
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .history-item:hover {
+      border-color: #FF6B6B;
+      transform: translateX(4px);
+    }
+
+    .ai-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .tab-button {
+      background: transparent;
+      border: none;
+      color: #999;
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .tab-button:hover {
+      color: #fff;
+    }
+
+    .tab-button.active {
+      color: #FF6B6B;
+      border-bottom-color: #FF6B6B;
+    }
+
+    .intensity-slider {
+      width: 100%;
+      height: 6px;
+      border-radius: 10px;
+      background: #3a3a3a;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .intensity-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #FF6B6B;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .intensity-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .intensity-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #FF6B6B;
+      cursor: pointer;
+      border: none;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: #3a3a3a;
+      border-radius: 24px;
+      transition: background 0.3s;
+      cursor: pointer;
+    }
+
+    .toggle-switch.active {
+      background: #FF6B6B;
+    }
+
+    .toggle-knob {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+
+    .toggle-switch.active .toggle-knob {
+      transform: translateX(20px);
+    }
+
+    .footer {
+      text-align: center;
+      padding: 32px 20px;
+      border-top: 1px solid #2a2a2a;
+      margin-top: 48px;
+    }
+
+    .footer-text {
+      color: #999;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .footer-link {
+      color: #FF6B6B;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+
+    .footer-link:hover {
+      color: #FF4757;
+    }
+
+    .share-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      animation: fadeIn 0.2s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .share-content {
+      background: #1e1e1e;
+      border: 1px solid #3a3a3a;
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 400px;
+      width: 90%;
+      animation: slideUp 0.3s;
+    }
+
+    .share-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: transform 0.2s;
+      cursor: pointer;
+      border: none;
+      width: 100%;
+      font-size: 15px;
+    }
+
+    .share-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .share-btn-whatsapp {
+      background: #25D366;
+      color: white;
+    }
+
+    .share-btn-twitter {
+      background: #1DA1F2;
+      color: white;
+    }
+
+    .share-btn-telegram {
+      background: #0088cc;
+      color: white;
+    }
+
+    .share-btn-copy {
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      color: white;
+    }
+
+    .share-btn-copy:hover {
+      background: #333;
+    }
+
+    /* Landing Page Styles */
+    .landing-page {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .landing-content {
+      max-width: 450px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      animation: slideUp 0.6s ease-out;
+    }
+
+
+
+    .auth-card {
+      background: #1e1e1e;
+      border: 1px solid #2a2a2a;
+      border-radius: 20px;
+      padding: 20px;
+      animation: slideUp 1s ease-out;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .google-btn {
+      background: white;
+      color: #333;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.3s;
+      margin-bottom: 10px;
+    }
+
+    .google-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
+    }
+
+
+    .bonus-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      color: #000;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      margin-left: 4px;
+    }
+
+    /* User Profile Header */
+    .user-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: #1e1e1e;
+      border-bottom: 1px solid #2a2a2a;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      padding: 8px 12px;
+      border-radius: 12px;
+    }
+
+    .user-profile:hover {
+      background: #2a2a2a;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FF6B6B, #FF4757);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      color: white;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .user-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: #fff;
+    }
+
+    .user-points {
+      font-size: 12px;
+      color: #FFD700;
+      font-weight: 600;
+    }
+
+    .plan-label {
+      background: linear-gradient(135deg,#FF6B6B,#FF4757);
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-left: 8px;
+    }
+
+    .plan-badge {
+      background: linear-gradient(135deg, rgba(100,200,255,0.06), rgba(150,100,255,0.06));
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 28px;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-block;
+      position: relative;
+    }
+
+    /* Decorative animated border ring for premium badge (thin, color-shifting) */
+    .plan-badge::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 40px;
+      /* conic gradient used to create a colorful border ring */
+      background: conic-gradient(from 0deg, rgba(64,224,208,0.95), rgba(100,149,255,0.95), rgba(255,105,180,0.95), rgba(255,215,0,0.95));
+      /* carve out the center so only the thin ring shows */
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      /* use exclude where supported */
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      padding: 2px;
+      pointer-events: none;
+      transform: translateZ(0);
+      animation: colorShift 4s linear infinite;
+      filter: blur(4px) saturate(1.4);
+    }
+
+    @keyframes colorShift {
+      0% { filter: blur(8px) saturate(1.2) hue-rotate(0deg); opacity: 0.9; }
+      16% { filter: blur(8px) saturate(1.2) hue-rotate(60deg); opacity: 1; }   /* green -> yellowish */
+      33% { filter: blur(8px) saturate(1.2) hue-rotate(140deg); opacity: 1; }  /* blue */
+      50% { filter: blur(8px) saturate(1.2) hue-rotate(220deg); opacity: 1; }  /* purple/pink */
+      66% { filter: blur(8px) saturate(1.2) hue-rotate(280deg); opacity: 1; }  /* red-ish */
+      83% { filter: blur(8px) saturate(1.2) hue-rotate(340deg); opacity: 1; }  /* near green */
+      100% { filter: blur(8px) saturate(1.2) hue-rotate(360deg); opacity: 0.95; }
+    }
+
+    /* Basic badge: simple filled look without outline */
+    .basic-badge {
+      background: linear-gradient(135deg,#FFD700,#FFA500);
+      color: #000;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-block;
+      box-shadow: none;
+    }
+
+    .upgrade-btn-header {
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      color: #000;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .upgrade-btn-header:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+    }
+
+    .logout-btn {
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      color: #999;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .logout-btn:hover {
+      color: #fff;
+      border-color: #FF6B6B;
+    }
+
+    /* Settings button style (outline icon) */
+    .settings-btn {
+      width: 40px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    }
+
+    .settings-btn svg { opacity: 0.95; stroke: currentColor; }
+
+    .settings-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.45);
+      border-color: rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .settings-btn:active { transform: translateY(0); }
+
+    /* Upgrade Plans Page */
+    .plans-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    /* Ensure upgrade page content appears below fixed header */
+    #upgrade-page {
+      padding-top: 72px;
+    }
+
+    .plan-card {
+      background: #1e1e1e;
+      border: 2px solid #2a2a2a;
+      border-radius: 20px;
+      padding: 32px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .plan-card:hover {
+      border-color: #FF6B6B;
+      transform: translateY(-4px);
+    }
+
+    .plan-card.recommended {
+      border-color: #FFD700;
+    }
+
+    .plan-card.recommended::before {
+      content: 'RECOMMENDED';
+      position: absolute;
+      top: 16px;
+      right: -32px;
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      color: #000;
+      padding: 4px 40px;
+      font-size: 11px;
+      font-weight: 700;
+      transform: rotate(45deg);
+    }
+
+    .plan-name {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .plan-price {
+      font-size: 40px;
+      font-weight: 800;
+      color: #FF6B6B;
+      margin-bottom: 16px;
+    }
+
+    .plan-features {
+      list-style: none;
+      padding: 0;
+      margin: 24px 0;
+    }
+
+    .plan-features li {
+      padding: 12px 0;
+      border-bottom: 1px solid #2a2a2a;
+      color: #ccc;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .plan-features li:last-child {
+      border-bottom: none;
+    }
+
+    .plan-btn {
+      background: linear-gradient(135deg, #FF6B6B, #FF4757);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 16px 32px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.3s;
+    }
+
+    .plan-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
+    }
+
+    .plan-btn.gold {
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      color: #000;
+    }
+
+    .low-points-banner {
+      background: linear-gradient(135deg, #FF6B6B, #FF4757);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      animation: slideUp 0.5s;
+    }
+
+    @media (max-width: 768px) {
+      .user-header {
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px;
+      }
+
+      .logo-container {
+        flex-direction: column;
+      }
+
+      .landing-title {
+        font-size: 36px;
+      }
+    }
+  </style>
+  <style>
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full"><!-- Landing Page (Auth) -->
+  <div id="landing-page" class="landing-page">
+   <div class="landing-content">
+    <div class="auth-card">
+     <h2 id="auth-title" style="font-size: 18px; font-weight: 700; margin-bottom: 12px; color: #fff;">Get Started</h2><button id="google-signin-btn" class="google-btn">
+      <svg width="20" height="20" viewbox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /> <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /> <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /> <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+      </svg> Continue with Google <span class="bonus-badge">+10</span> </button> <!-- Email/Password Form -->
+     <form id="auth-form" style="margin-bottom: 10px; margin-top: 10px;"><!-- Name field (only for signup) -->
+      <div id="name-field" style="display: none; margin-bottom: 8px;"><input type="text" id="auth-name" class="input-box" placeholder="Full Name" style="padding: 10px 12px; font-size: 13px;">
+      </div><!-- Email field -->
+      <div style="margin-bottom: 8px;"><input type="email" id="auth-email" class="input-box" placeholder="Email" style="padding: 10px 12px; font-size: 13px;" required>
+      </div><!-- Password field -->
+      <div style="margin-bottom: 8px; position: relative;">
+       <div style="position: relative;"><input type="password" id="auth-password" class="input-box" placeholder="Password" style="padding: 10px 36px 10px 12px; font-size: 13px;" required> <button type="button" id="toggle-password" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #999; cursor: pointer; font-size: 16px; padding: 4px;" title="Show/Hide Password"> 👁️ </button>
+       </div>
+       <div id="password-strength" style="margin-top: 4px; font-size: 11px; display: none;">
+        <div style="display: flex; gap: 3px; margin-bottom: 3px;">
+         <div class="strength-bar" style="flex: 1; height: 2px; background: #3a3a3a; border-radius: 2px;"></div>
+         <div class="strength-bar" style="flex: 1; height: 2px; background: #3a3a3a; border-radius: 2px;"></div>
+         <div class="strength-bar" style="flex: 1; height: 2px; background: #3a3a3a; border-radius: 2px;"></div>
+        </div><span id="strength-text" style="color: #999;">Password strength</span>
+       </div>
+      </div><!-- Remember Me & Forgot Password (only for login) -->
+      <div id="login-options" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 12px;"><label style="display: flex; align-items: center; gap: 4px; cursor: pointer; color: #999;"> <input type="checkbox" id="remember-me" style="cursor: pointer;"> <span>Remember me</span> </label> <button type="button" id="forgot-password-btn" style="background: none; border: none; color: #FF6B6B; cursor: pointer; font-size: 12px; padding: 0;"> Forgot Password? </button>
+      </div><!-- Error message -->
+      <div id="auth-error" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; padding: 8px 10px; margin-bottom: 10px; color: #ef4444; font-size: 12px;"></div><!-- Submit button --> <button type="submit" id="auth-submit-btn" class="google-btn" style="background: linear-gradient(135deg, #FF6B6B, #FF4757); margin-bottom: 0;"> <span id="auth-btn-text">Sign In</span> </button>
+     </form><!-- Toggle between Login/Signup -->
+     <div style="text-align: center; margin-bottom: 12px;"><button id="toggle-auth-mode" style="background: none; border: none; color: #999; cursor: pointer; font-size: 13px; text-decoration: underline;"> Don't have an account? <span style="color: #FF6B6B; font-weight: 600;">Sign Up</span> </button>
+    </div>
+     <p style="color: #666; font-size: 10px; margin-top: 10px; line-height: 1.4;">Sign up to save your roasts, earn more points, and unlock exclusive features!</p>
+    </div>
+   </div>
+  </div><!-- User Header (shown after auth) -->
+  <header id="user-header" class="user-header" style="display: none;">
+    <div style="display: flex; align-items: center; gap: 16px;">
+    <div class="logo-container" style="margin: 0; flex-direction: row; display:flex; align-items:center; gap:8px;">
+     <span style="font-size:32px;">🔥</span>
+    <span style="font-size:22px; font-weight:800; color: #ffffff;">Roastyou</span>
+     <span class="ai-badge" style="font-size:12px; padding:6px 10px; margin-left:8px;">AI Powered</span>
+    </div>
+    </div>
+  <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;"><button id="upgrade-btn-header" class="upgrade-btn-header" style="display: none;"> ⭐ Upgrade Plan </button>
+  <button id="auth-btn-header" class="upgrade-btn-header auth-btn-header" style="display: none;"> 🔐 Sign Up / Login </button>
+    <div id="user-profile" class="user-profile">
+     <div id="user-avatar" class="user-avatar">
+      G
+     </div>
+     <div class="user-info">
+      <div id="user-name" class="user-name">
+       Guest User
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div id="user-points" class="user-points">🔥 10 Points</div>
+        <div id="plan-label" class="plan-label" style="display:none;">Free</div>
+      </div>
+     </div>
+    </div>
+    <button id="settings-btn" class="settings-btn" title="Settings">
+      <span style="font-size:18px; line-height:1;">⚙️</span>
+    </button>
+   </div>
+  </header><!-- Main App -->
+  <main id="main-app" class="main-container h-full" style="display: none;">
+   <div class="max-w-6xl mx-auto p-6"><!-- Low Points Banner -->
+    <div id="low-points-banner" class="low-points-banner" style="display: none;"></div><!-- Premium User Badge -->
+    <div id="premium-badge" class="low-points-banner" style="display: none; background: linear-gradient(135deg, #FFD700, #FFA500);">
+     <div>
+      <div style="font-size: 20px; font-weight: 800; margin-bottom: 4px; color: #000;">
+       ⭐ Premium Member
+      </div>
+      <div style="font-size: 14px; opacity: 0.9; color: #000;">
+       You have unlimited access! Keep roasting! 🔥
+      </div>
+     </div>
+    </div><!-- Header -->
+    <!-- main content header logo removed -->
+    <div class="flex justify-center gap-4 mb-8 border-b border-gray-800"><button class="tab-button active" data-tab="generate"> ✨ Generate Roast </button> <button class="tab-button" data-tab="history">    History </button> <button class="tab-button" data-tab="stats"> 📊 Stats </button>
+    </div><!-- Generate Tab -->
+    <div id="generate-tab" class="tab-content">
+     <div class="max-w-3xl mx-auto"><!-- Main Generator Card -->
+      <div>
+       <div class="roast-card">
+        <div class="mb-6"><label class="block text-gray-400 font-medium mb-3 text-sm uppercase tracking-wide">Select Category</label>
+         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3"><button class="category-btn active" data-category="name">
+           <div class="text-2xl mb-1">
+            👤
+           </div>
+           <div class="text-sm">
+            Name
+           </div></button> <button class="category-btn" data-category="mood">
+           <div class="text-2xl mb-1">
+            😊
+           </div>
+           <div class="text-sm">
+            Mood
+           </div></button> <button class="category-btn" data-category="habit">
+           <div class="text-2xl mb-1">
+            🎯
+           </div>
+           <div class="text-sm">
+            Habit
+           </div></button> <button class="category-btn" data-category="situation">
+           <div class="text-2xl mb-1">
+            💡
+           </div>
+           <div class="text-sm">
+            Situation
+           </div></button>
+         </div>
+        </div>
+        <div class="mb-6"><label for="user-input" class="block text-gray-400 font-medium mb-3 text-sm uppercase tracking-wide"> <span id="input-label">Enter Name</span> </label> <input type="text" id="user-input" class="input-box" placeholder="e.g., Rahul" maxlength="75" autocomplete="off">
+        </div>
+        <div class="mb-6"><label class="block text-gray-400 font-medium mb-3 text-sm uppercase tracking-wide"> Roast Intensity: <span id="intensity-value">Medium</span> </label> <input type="range" id="intensity-slider" class="intensity-slider" min="1" max="3" value="2">
+         <div class="flex justify-between text-xs text-gray-600 mt-2"><span>Mild 😊</span> <span>Medium 😏</span> <span>Savage 💀</span>
+         </div>
+        </div><button id="generate-btn" class="roast-btn w-full"> <span id="btn-text">🚀 Generate AI Roast (1 Point)</span> </button>
+       </div>
+      </div>
+     </div><!-- Output Section -->
+     <div id="output-container" style="display: none;" class="mt-6">
+      <div class="roast-card">
+       <div class="flex flex-wrap items-center justify-between mb-4 gap-3">
+        <h3 class="text-lg font-semibold">Your Roast 🔥</h3>
+        <div class="flex gap-2"><button id="copy-btn" class="copy-btn" title="Copy"> 📋 Copy </button> <button id="share-btn" class="copy-btn" title="Share"> 📤 Share </button> <button id="regenerate-btn" class="copy-btn" title="Regenerate"> 🔄 New </button>
+        </div>
+       </div>
+       <div class="roast-output animate-slide-up" id="roast-text">
+        Your roast will appear here...
+       </div>
+       <div class="mt-4 flex items-center justify-between text-sm text-gray-500 flex-wrap gap-2">
+        <div>
+         Category: <span class="text-gray-300" id="output-category">-</span>
+        </div>
+        <div>
+         Intensity: <span class="text-gray-300" id="output-intensity">-</span>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- History Tab -->
+    <div id="history-tab" class="tab-content" style="display: none;">
+     <div class="roast-card">
+      <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+       <h2 class="text-2xl font-bold">Roast History 📜</h2><button id="clear-history-btn" class="copy-btn"> 🗑️ Clear All </button>
+      </div>
+      <div id="history-list">
+       <div class="text-center text-gray-500 py-12">
+        <div class="text-5xl mb-4">
+         📭
+        </div>
+        <p>No roasts yet. Generate your first one!</p>
+       </div>
+      </div>
+     </div>
+    </div><!-- Stats Tab -->
+    <div id="stats-tab" class="tab-content" style="display: none;">
+     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div class="stats-card">
+       <div class="stat-number" id="stat-total">
+        0
+       </div>
+       <div class="stat-label">
+        Total Generated
+       </div>
+      </div>
+      <div class="stats-card">
+       <div class="stat-number" id="stat-copied">
+        0
+       </div>
+       <div class="stat-label">
+        Times Copied
+       </div>
+      </div>
+      <div class="stats-card">
+       <div class="stat-number" id="stat-favorite">
+        Name
+       </div>
+       <div class="stat-label">
+        Fav Category
+       </div>
+      </div>
+     </div>
+     <div class="roast-card">
+      <h3 class="text-xl font-bold mb-4">Category Breakdown</h3>
+      <div class="space-y-3">
+       <div>
+        <div class="flex justify-between mb-1 text-sm"><span class="text-gray-400">👤 Name</span> <span id="stat-name-count">0</span>
+        </div>
+        <div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+         <div id="stat-name-bar" class="h-full bg-gradient-to-r from-red-500 to-pink-500" style="width: 0%"></div>
+        </div>
+       </div>
+       <div>
+        <div class="flex justify-between mb-1 text-sm"><span class="text-gray-400">😊 Mood</span> <span id="stat-mood-count">0</span>
+        </div>
+        <div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+         <div id="stat-mood-bar" class="h-full bg-gradient-to-r from-blue-500 to-cyan-500" style="width: 0%"></div>
+        </div>
+       </div>
+       <div>
+        <div class="flex justify-between mb-1 text-sm"><span class="text-gray-400">🎯 Habit</span> <span id="stat-habit-count">0</span>
+        </div>
+        <div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+         <div id="stat-habit-bar" class="h-full bg-gradient-to-r from-green-500 to-emerald-500" style="width: 0%"></div>
+        </div>
+       </div>
+       <div>
+        <div class="flex justify-between mb-1 text-sm"><span class="text-gray-400">💡 Situation</span> <span id="stat-situation-count">0</span>
+        </div>
+        <div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+         <div id="stat-situation-bar" class="h-full bg-gradient-to-r from-yellow-500 to-orange-500" style="width: 0%"></div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Footer -->
+    <footer class="footer">
+     <p class="footer-text">Made by <a href="https://khanni.com" target="_blank" rel="noopener noreferrer" class="footer-link">Khanni</a></p>
+     <p class="footer-text" style="opacity: 0.7;">Try roasting your friends • Share the fun 🔥</p>
+    </footer>
+   </div>
+  </main><!-- Upgrade Plans Page -->
+  <div id="upgrade-page" style="display: none; min-height: 100%; background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%); padding-bottom: 40px;">
+   <div class="plans-container">
+    <div style="text-align: center; margin-bottom: 48px;">
+    <h1 style="font-size: 48px; font-weight: 800; margin-bottom: 16px; background: linear-gradient(135deg, #FF6B6B, #FFD700); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;">Upgrade Your Plan 🔥</h1>
+     <p style="color: #999; font-size: 18px;">Choose the perfect plan for unlimited roasting!</p><button onclick="closeUpgradePage()" style="margin-top: 16px; background: #2a2a2a; border: 1px solid #3a3a3a; color: #999; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 14px;"> ← Back to Roasting </button>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8"><!-- Basic Plan -->
+     <div class="plan-card">
+      <div class="plan-name">
+       ⚡ Basic Plan
+      </div>
+      <div class="plan-price">
+       ₹50
+      </div>
+      <div style="color: #999; margin-bottom: 24px;">
+       One-time purchase
+      </div>
+      <ul class="plan-features">
+       <li>
+        <svg width="20" height="20" viewbox="0 0 20 20" fill="#22c55e"><path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm-2 15l-5-5 1.41-1.41L8 12.17l7.59-7.59L17 6l-9 9z" />
+        </svg><span><strong>400 Points</strong> added instantly</span></li>
+       <li>
+        <svg width="20" height="20" viewbox="0 0 20 20" fill="#22c55e"><path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm-2 15l-5-5 1.41-1.41L8 12.17l7.59-7.59L17 6l-9 9z" />
+        </svg><span>Generate <strong>400 roasts</strong></span></li>
+       <li>
+        <svg width="20" height="20" viewbox="0 0 20 20" fill="#22c55e"><path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm-2 15l-5-5 1.41-1.41L8 12.17l7.59-7.59L17 6l-9 9z" />
+        </svg><span>Access to all categories</span></li>
+       <li>
+        <svg width="20" height="20" viewbox="0 0 20 20" fill="#22c55e"><path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm-2 15l-5-5 1.41-1.41L8 12.17l7.59-7.59L17 6l-9 9z" />
+        </svg><span>Save roast history</span></li>
+       <li>
+        <svg width="20" height="20" viewbox="0 0 20 20" fill="#22c55e"><path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm-2 15l-5-5 1.41-1.41L8 12.17l7.59-7.59L17 6l-9 9z" />
+        </svg><span>No expiry date</span></li>
+      </ul><button class="plan-btn" onclick="purchasePlan('basic')"> Purchase Basic Plan </button>
+     </div><!-- Advance Plan -->
+     <div class="plan-card recommended">
+      <div class="plan-name">
+       ⭐ Advance Plan
+      </div>
+      <div class="plan-price">
+       ₹100<span style="font-size: 20px; color: #999;">/month</span>
+      </div>
+      <div style="color: #FFD700; margin-bottom: 24px; font-weight: 600;">
+       Most Popular!
+      </div>
+      <ul class="plan-features">
+       <li>
+        <svg width="20" height="20" viewbox="0 0 20 20" fill="#FFD700"><path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm-2 15l-5-5 1.41-1.41L8 12.17l7.59-7.59L17 6l-9 9z" />
+        </svg><span><strong>UNLIMITED</strong> roasts 🔥</span></li>
+       <li>
+        <svg width="20" height="20" viewbox="0 0 20 20" fill="#FFD700"><path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm-2 15l-5-5 1.41-1.41L8 12.17l7.59-7.59L17 6l-9 9z" />
+        </svg><span>No points required</span></li>
+       <li>
+        <svg width="20" height="20" viewbox="0 0 20 20" fill="#FFD700"><path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm-2 15l-5-5 1.41-1.41L8 12.17l7.59-7.59L17 6l-9 9z" />
+        </svg><span>Priority AI processing</span></li>
+       <li>
+        <svg width="20" height="20" viewbox="0 0 20 20" fill="#FFD700"><path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm-2 15l-5-5 1.41-1.41L8 12.17l7.59-7.59L17 6l-9 9z" />
+        </svg><span>Exclusive roast templates</span></li>
+       <li>
+        <svg width="20" height="20" viewbox="0 0 20 20" fill="#FFD700"><path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm-2 15l-5-5 1.41-1.41L8 12.17l7.59-7.59L17 6l-9 9z" />
+        </svg><span>Early access to new features</span></li>
+       <li>
+        <svg width="20" height="20" viewbox="0 0 20 20" fill="#FFD700"><path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm-2 15l-5-5 1.41-1.41L8 12.17l7.59-7.59L17 6l-9 9z" />
+        </svg><span>Cancel anytime</span></li>
+      </ul><button class="plan-btn gold" onclick="purchasePlan('advance')"> Subscribe to Advance </button>
+     </div>
+    </div>
+    <div style="text-align: center; margin-top: 48px; padding: 24px; background: #1e1e1e; border-radius: 16px; border: 1px solid #2a2a2a;">
+     <div style="font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 8px;">
+      💳 Secure Payment
+     </div>
+     <div style="color: #999; font-size: 14px;">
+      All payments are processed securely. We accept UPI, Cards, and Net Banking.
+     </div>
+    </div>
+   </div>
+  </div>
+  <div id="toast-container"></div>
+  <div id="share-modal-container"></div>
+  <div id="settings-modal-container"></div>
+ <script>
+    // User Data Structure
+    let userData = {
+      isAuthenticated: false,
+      isGuest: false,
+      name: 'Guest User',
+      email: '',
+      avatar: '',
+      points: 10,
+      plan: 'free', // 'free', 'basic', 'advance'
+      signupMethod: 'guest' // 'guest', 'google', 'email'
+    };
+
+    let authMode = 'login'; // 'login' or 'signup'
+    let currentCategory = 'name';
+    let currentIntensity = 2;
+    let currentRoast = '';
+    let currentTab = 'generate';
+    let saveHistory = true;
+    let isGenerating = false;
+    
+    let stats = {
+      total: 0,
+      copied: 0,
+      categories: { name: 0, mood: 0, habit: 0, situation: 0 }
+    };
+    // Settings
+    let settings = {
+      textSize: 'real', // 'real' or 'large'
+      language: 'hinglish+english', // 'hinglish+english' or 'english'
+      autoCopy: false
+    };
+    const roastTemplates = {};
+
+    const categoryLabels = {
+      name: 'Enter Name',
+      mood: 'Enter Your Mood',
+      habit: 'Enter Your Habit',
+      situation: 'Describe Situation'
+    };
+
+    const placeholders = {
+      name: 'e.g., Rahul, Priya, Arjun',
+      mood: 'e.g., tired, excited, confused',
+      habit: 'e.g., scrolling reels, late sleeping',
+      situation: 'e.g., missed the bus, exam fail'
+    };
+
+    const intensityLabels = ['', 'Mild   ', 'Medium 😏', 'Savage 💀'];
+
+    // Initialize - check server session first so OAuth redirect into /app.html works
+    async function init() {
+      // Always try to detect server session first (BEFORE loading local state)
+      let serverAuth = false;
+      try {
+        const resp = await fetch('/session', { credentials: 'include' });
+        if (resp.ok) {
+          const sessionData = await resp.json();
+          if (sessionData.isAuthenticated && sessionData.user) {
+            serverAuth = true;
+            // User is logged in on backend - populate from backend
+            userData.isAuthenticated = true;
+            userData.isGuest = false;
+            userData.name = sessionData.user.name || 'User';
+            userData.email = sessionData.user.email || '';
+            userData.avatar = sessionData.user.avatar || '';
+              userData.points = typeof sessionData.user.points !== 'undefined' ? sessionData.user.points : 10;
+              userData.plan = sessionData.user.plan || 'free';
+              userData.signupMethod = sessionData.user.signupMethod || 'google';
+              userData.history = sessionData.user.history || [];
+            console.log('✅ Server session detected:', userData.email);
+          }
+        }
+      } catch (e) {
+        console.warn('Session check failed:', e);
+      }
+
+      // If no server auth, load local state
+      if (!serverAuth) {
+        loadUserData();
+      }
+      
+      loadStats();
+      loadSettings();
+
+      // If authenticated (either from server or local), show app
+      if (userData.isAuthenticated) {
+        showMainApp();
+      } else {
+        showLandingPage();
+      }
+    }
+
+    async function loadHistory() {
+      const historyList = document.getElementById('history-list');
+      let history = [];
+      if (userData.isAuthenticated && userData.email) {
+        try {
+          const resp = await fetch('/session', { credentials: 'include' });
+          if (resp.ok) {
+            const json = await resp.json();
+            history = (json.user && json.user.history) || [];
+          }
+        } catch (e) { console.error('Failed to load history from server', e); }
+      } else {
+        const key = 'roastHistory';
+        history = JSON.parse(localStorage.getItem(key) || '[]');
+      }
+
+      if (!history || history.length === 0) {
+        historyList.innerHTML = `
+          <div class="text-center text-gray-500 py-12">
+            <div class="text-5xl mb-4">  </div>
+            <p>No roasts yet. Generate your first one!</p>
+          </div>
+        `;
+        return;
+      }
+
+      historyList.innerHTML = history.map(item => `
+        <div class="history-item" data-id="${item.id}">
+          <div class="flex justify-between items-start mb-2">
+            <div class="flex-1">
+              <div class="text-sm text-gray-500 mb-1">
+                ${getCategoryEmoji(item.category)} ${item.category}    ${item.intensity}
+              </div>
+              <div class="font-medium text-white mb-2">${escapeHtml(item.input)}</div>
+              <div class="text-gray-300">${escapeHtml(item.roast)}</div>
+            </div>
+            <button class="copy-btn text-xs ml-3" onclick="copyHistoryItem(\`${item.roast.replace(/`/g, '\`').replace(/\$/g, '\$')}\`)">
+              📋
+            </button>
+            <button class="copy-btn text-xs ml-2" onclick="deleteHistoryItem(${item.id})" title="Delete this roast">🗑️</button>
+          </div>
+          <div class="text-xs text-gray-600">
+            ${formatDate(item.timestamp)}
+          </div>
+        </div>
+      `).join('');
+    }
+      document.getElementById('main-app').style.display = 'block';
+
+    // Google Sign-in: trigger backend OAuth flow
+    document.getElementById('google-signin-btn').addEventListener('click', function() {
+      // Redirect to backend Google OAuth route which will set session cookie
+      window.location.href = '/auth/google';
+    });
+
+    // Toggle Auth Mode (Login/Signup)
+    document.getElementById('toggle-auth-mode').addEventListener('click', function() {
+      authMode = authMode === 'login' ? 'signup' : 'login';
+      updateAuthUI();
+    });
+
+    function updateAuthUI() {
+      const title = document.getElementById('auth-title');
+      const nameField = document.getElementById('name-field');
+      const loginOptions = document.getElementById('login-options');
+      const btnText = document.getElementById('auth-btn-text');
+      const toggleBtn = document.getElementById('toggle-auth-mode');
+      const passwordStrength = document.getElementById('password-strength');
+
+      if (authMode === 'signup') {
+        title.textContent = 'Create Account';
+        nameField.style.display = 'block';
+        loginOptions.style.display = 'none';
+        btnText.textContent = 'Sign Up';
+        toggleBtn.innerHTML = 'Already have an account? <span style="color: #FF6B6B; font-weight: 600;">Sign In</span>';
+        passwordStrength.style.display = 'block';
+      } else {
+        title.textContent = 'Welcome Back';
+        nameField.style.display = 'none';
+        loginOptions.style.display = 'flex';
+        btnText.textContent = 'Sign In';
+        toggleBtn.innerHTML = 'Don\'t have an account? <span style="color: #FF6B6B; font-weight: 600;">Sign Up</span>';
+        passwordStrength.style.display = 'none';
+      }
+      
+      // Clear form
+      document.getElementById('auth-form').reset();
+      hideAuthError();
+    }
+
+    // Toggle Password Visibility
+    document.getElementById('toggle-password').addEventListener('click', function() {
+      const passwordInput = document.getElementById('auth-password');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        this.textContent = '🙈';
+      } else {
+        passwordInput.type = 'password';
+        this.textContent = '👁️';
+      }
+    });
+
+    // Password Strength Checker
+    document.getElementById('auth-password').addEventListener('input', function() {
+      if (authMode === 'signup') {
+        const password = this.value;
+        const strength = calculatePasswordStrength(password);
+        updatePasswordStrength(strength);
+      }
+    });
+
+    function calculatePasswordStrength(password) {
+      let strength = 0;
+      if (password.length >= 8) strength++;
+      if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+      if (/[0-9]/.test(password) && /[^a-zA-Z0-9]/.test(password)) strength++;
+      return strength;
+    }
+
+    function updatePasswordStrength(strength) {
+      const bars = document.querySelectorAll('.strength-bar');
+      const text = document.getElementById('strength-text');
+      
+      bars.forEach((bar, index) => {
+        if (index < strength) {
+          if (strength === 1) {
+            bar.style.background = '#ef4444';
+          } else if (strength === 2) {
+            bar.style.background = '#f59e0b';
+          } else {
+            bar.style.background = '#22c55e';
+          }
+        } else {
+          bar.style.background = '#3a3a3a';
+        }
+      });
+
+      if (strength === 0) {
+        text.textContent = 'Too weak';
+        text.style.color = '#ef4444';
+      } else if (strength === 1) {
+        text.textContent = 'Weak password';
+        text.style.color = '#ef4444';
+      } else if (strength === 2) {
+        text.textContent = 'Medium strength';
+        text.style.color = '#f59e0b';
+      } else {
+        text.textContent = 'Strong password';
+        text.style.color = '#22c55e';
+      }
+    }
+
+    // Auth Form Submit (now uses backend API instead of localStorage)
+    document.getElementById('auth-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const name = document.getElementById('auth-name').value.trim();
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const rememberMe = document.getElementById('remember-me').checked;
+
+      // Validation
+      if (authMode === 'signup' && !name) return showAuthError('Please enter your name');
+      if (!email) return showAuthError('Please enter your email');
+      if (!isValidEmail(email)) return showAuthError('Please enter a valid email address');
+      if (!password) return showAuthError('Please enter your password');
+      if (authMode === 'signup' && password.length < 6) return showAuthError('Password must be at least 6 characters');
+
+      const submitBtn = document.getElementById('auth-submit-btn');
+      submitBtn.disabled = true; submitBtn.style.opacity = '0.6';
+      submitBtn.querySelector('#auth-btn-text').textContent = authMode === 'signup' ? 'Creating Account...' : 'Signing In...';
+
+      try {
+        const url = authMode === 'signup' ? '/signup' : '/signin';
+        const body = authMode === 'signup' ? { name, email, password } : { email, password };
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(body)
+        });
+
+        const json = await resp.json();
+        if (!resp.ok) {
+          showAuthError(json.error || 'Authentication failed');
+          submitBtn.disabled = false; submitBtn.style.opacity = '1';
+          submitBtn.querySelector('#auth-btn-text').textContent = authMode === 'signup' ? 'Sign Up' : 'Sign In';
+          return;
+        }
+
+        // On success the server created a session cookie; redirect into protected app
+        window.location.href = '/app.html';
+      } catch (e) {
+        console.error('Auth request failed', e);
+        showAuthError('Network error');
+        submitBtn.disabled = false; submitBtn.style.opacity = '1';
+        submitBtn.querySelector('#auth-btn-text').textContent = authMode === 'signup' ? 'Sign Up' : 'Sign In';
+      }
+    });
+
+    // Forgot Password
+    document.getElementById('forgot-password-btn').addEventListener('click', function() {
+      const email = document.getElementById('auth-email').value.trim();
+      
+      if (!email) {
+        showAuthError('Please enter your email first');
+        return;
+      }
+
+      if (!isValidEmail(email)) {
+        showAuthError('Please enter a valid email address');
+        return;
+      }
+
+      // Password reset not implemented on client. Use server-side flow (not configured).
+      showToast('Password reset is not implemented. Please contact support.', 'info');
+    });
+
+    function isValidEmail(email) {
+      const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return regex.test(email);
+    }
+
+    function showAuthError(message) {
+      const errorDiv = document.getElementById('auth-error');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+    }
+
+    function hideAuthError() {
+      const errorDiv = document.getElementById('auth-error');
+      errorDiv.style.display = 'none';
+    }
+
+    // Google Sign-in is the only way to access the app (no Maybe Later)
+
+    // Logout (if logout button exists)
+    if (document.getElementById('logout-btn')) {
+      document.getElementById('logout-btn').addEventListener('click', async function() {
+        if (!confirm('Are you sure you want to logout?')) return;
+        try {
+          await fetch('/signout', { method: 'POST', credentials: 'include' });
+        } catch (e) { console.error('Signout failed', e); }
+        location.reload();
+      });
+    }
+
+    // Upgrade Button Header - show upgrade page for free/basic users
+    document.getElementById('upgrade-btn-header').addEventListener('click', showUpgradePage);
+    // Auth Button in Header (shows landing auth form)
+    if (document.getElementById('auth-btn-header')) {
+      document.getElementById('auth-btn-header').addEventListener('click', function() {
+        // show landing auth UI so user can signup/login
+        showLandingPage();
+      });
+    }
+
+    // Update User UI
+    function updateUserUI() {
+      const nameEl = document.getElementById('user-name');
+      const pointsEl = document.getElementById('user-points');
+      const avatarEl = document.getElementById('user-avatar');
+      const upgradeBtn = document.getElementById('upgrade-btn-header');
+
+      nameEl.textContent = userData.name;
+      pointsEl.textContent = `🔥 ${userData.points} Points`;
+      
+      // Hide the large premium badge popup entirely
+      const premiumBadge = document.getElementById('premium-badge');
+      if (premiumBadge) premiumBadge.style.display = 'none';
+
+      // Show points/plan compact label in header
+      const planLabel = document.getElementById('plan-label');
+
+      if (userData.plan === 'advance') {
+        pointsEl.textContent = '⭐ UNLIMITED';
+        pointsEl.style.color = '#FFD700';
+        if (planLabel) { planLabel.style.display = 'none'; }
+        if (upgradeBtn) {
+          upgradeBtn.style.display = 'block';
+          upgradeBtn.textContent = 'Premium Member';
+          upgradeBtn.className = 'plan-badge';
+          upgradeBtn.disabled = true;
+          upgradeBtn.style.cursor = 'default';
+        }
+      } else if (userData.plan === 'basic') {
+        // Show Basic Member badge (solid, no outline)
+        if (planLabel) { planLabel.style.display = 'none'; }
+        if (upgradeBtn) {
+          upgradeBtn.style.display = 'block';
+          upgradeBtn.textContent = '⭐ Basic Member';
+          upgradeBtn.className = 'basic-badge';
+          upgradeBtn.disabled = true;
+          upgradeBtn.style.cursor = 'default';
+          upgradeBtn.style.opacity = '0.95';
+        }
+      } else {
+        // free user - show upgrade button
+        if (planLabel) { planLabel.style.display = 'none'; }
+        if (upgradeBtn) { upgradeBtn.style.display = 'block'; upgradeBtn.textContent = '⭐ Upgrade Plan'; upgradeBtn.className = 'upgrade-btn-header'; upgradeBtn.disabled = false; upgradeBtn.style.cursor = 'pointer'; upgradeBtn.style.opacity = ''; }
+      }
+
+      // If user has authenticated, clear any persistent guest flags
+      // and restore upgrade UI so normal upgrade flow resumes.
+      if (userData.isAuthenticated) {
+        const authHdr = document.getElementById('auth-btn-header');
+        if (authHdr) authHdr.style.display = 'none';
+        // restore upgrade UI
+        toggleUpgradeOptions(true);
+        // re-enable history saving after user authenticates
+        saveHistory = true;
+        // migrate any guest history into the authenticated user's history, then reload
+        try { migrateGuestHistoryToUser(); } catch(e){}
+        try { loadHistory(); } catch(e){}
+      }
+
+      if (userData.avatar) {
+        avatarEl.innerHTML = `<img src="${userData.avatar}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+      } else {
+        avatarEl.textContent = userData.name.charAt(0).toUpperCase();
+      }
+    }
+
+    // Toggle header buttons based on authentication
+    function updateHeaderAuthButton() {
+      const upgradeHdr = document.getElementById('upgrade-btn-header');
+      const authHdr = document.getElementById('auth-btn-header');
+
+      if (userData.isAuthenticated) {
+        if (upgradeHdr) upgradeHdr.style.display = 'block';
+        if (authHdr) authHdr.style.display = 'none';
+        toggleUpgradeOptions(true);
+      } else {
+        if (upgradeHdr) upgradeHdr.style.display = 'none';
+        if (authHdr) authHdr.style.display = 'none';
+        toggleUpgradeOptions(false);
+      }
+    }
+
+    // Show or hide upgrade-related buttons across the app
+    function toggleUpgradeOptions(show) {
+      // header upgrade
+      const upgradeHdr = document.getElementById('upgrade-btn-header');
+      if (upgradeHdr) upgradeHdr.style.display = show ? 'block' : 'none';
+
+      // any buttons that trigger showUpgradePage()
+      document.querySelectorAll('button[onclick*="showUpgradePage"]').forEach(btn => {
+        try { btn.style.display = show ? '' : 'none'; } catch(e){}
+      });
+
+      // any elements with potential upgrade classes
+      document.querySelectorAll('.upgrade-btn, .upgrade-button, .upgrade-action').forEach(el => {
+        try { el.style.display = show ? '' : 'none'; } catch(e){}
+      });
+
+      // low points banner is managed by checkLowPoints(), but ensure it's hidden when requested
+      const lowPointsBanner = document.getElementById('low-points-banner');
+      if (lowPointsBanner) lowPointsBanner.style.display = show ? lowPointsBanner.style.display : 'none';
+    }
+
+    // Remove/hide any Maybe Later buttons or options across the app
+    function removeMaybeLaterOptions() {
+      // hide specific button(s)
+      // hide settings login button if it uses same class
+      const settingsLogin = document.getElementById('settings-login');
+      if (settingsLogin) settingsLogin.style.display = 'none';
+      const settingsLogout = document.getElementById('settings-logout');
+      if (settingsLogout) settingsLogout.style.display = 'none';
+    }
+
+    // Save/Load User Data
+    function saveUserData() {
+      // User data is persisted on the server via session and DB. No-op on client.
+    }
+
+    function loadUserData() {
+      // Client reads session via /session in init(); no localStorage usage for auth.
+    }
+
+    // Check Low Points - only for authenticated users
+    function checkLowPoints() {
+      const lowPointsBanner = document.getElementById('low-points-banner');
+      // Only show for authenticated users
+      if (!userData.isAuthenticated) {
+        lowPointsBanner.style.display = 'none';
+        return;
+      }
+
+      if (userData.points <= 5 && userData.points > 0) {
+        // Show low points warning
+        lowPointsBanner.innerHTML = `
+          <div>
+            <div style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">⚠️ Running Low on Points!</div>
+            <div style="font-size: 14px; opacity: 0.9;">Only ${userData.points} points left. Upgrade to continue! 🔥</div>
+          </div>
+          <button onclick="showUpgradePage()" style="background: white; color: #FF6B6B; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 700; cursor: pointer;">
+            Upgrade Now
+          </button>
+        `;
+        lowPointsBanner.style.display = 'flex';
+      } else {
+        lowPointsBanner.style.display = 'none';
+      }
+    }
+
+    // Purchase Plan (Simulated - Replace with actual payment gateway)
+    function purchasePlan(plan) {
+      if (plan === 'basic') {
+        // Simulate payment
+        showToast('Processing payment...', 'info');
+        setTimeout(() => {
+          userData.points += 400;
+          userData.plan = 'basic';
+          saveUserData();
+          updateUserUI();
+          checkLowPoints();
+          showToast('Payment successful! 400 points added!     ', 'success');
+          closeUpgradePage();
+        }, 2000);
+      } else if (plan === 'advance') {
+        // Simulate payment
+        showToast('Processing payment...', 'info');
+        setTimeout(() => {
+          userData.plan = 'advance';
+          saveUserData();
+          updateUserUI();
+          checkLowPoints();
+          showToast('Welcome to Advance Plan! Unlimited roasts! ⭐', 'success');
+          closeUpgradePage();
+        }, 2000);
+      }
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab-button').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const tab = this.dataset.tab;
+        switchTab(tab);
+      });
+    });
+
+    function switchTab(tab) {
+      currentTab = tab;
+      
+      document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+      document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+      
+      document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+      document.getElementById(`${tab}-tab`).style.display = 'block';
+      
+      if (tab === 'stats') {
+        updateStatsDisplay();
+      }
+    }
+
+    // Category selection
+    document.querySelectorAll('.category-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentCategory = this.dataset.category;
+        
+        document.getElementById('input-label').textContent = categoryLabels[currentCategory];
+        document.getElementById('user-input').placeholder = placeholders[currentCategory];
+        document.getElementById('user-input').value = '';
+      });
+    });
+
+    // Intensity slider
+    document.getElementById('intensity-slider').addEventListener('input', function() {
+      currentIntensity = parseInt(this.value);
+      document.getElementById('intensity-value').textContent = intensityLabels[currentIntensity];
+    });
+
+
+
+    // Generate roast
+    document.getElementById('generate-btn').addEventListener('click', generateRoast);
+    document.getElementById('user-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') generateRoast();
+    });
+
+    async function generateRoast() {
+      if (isGenerating) return;
+      isGenerating = true;
+      const input = document.getElementById('user-input').value.trim();
+
+      if (!input) {
+        showToast('Kuch toh likh yrr! 😅', 'error');
+        isGenerating = false;
+        return;
+      }
+
+      // Check points
+      if (userData.plan !== 'advance' && userData.points <= 0) {
+        showToast('Points khatam ho gaye sir! Upgrade karo! 💀', 'error');
+        showUpgradePage();
+        isGenerating = false;
+        const btn = document.getElementById('generate-btn');
+        const btnText = document.getElementById('btn-text');
+        btn.disabled = false;
+        btnText.textContent = '🚀 Generate AI Roast (1 Point)';
+        return;
+      }
+
+      const btn = document.getElementById('generate-btn');
+      const btnText = document.getElementById('btn-text');
+
+      btn.disabled = true;
+      btnText.innerHTML = '<div class="loading-spinner"></div> Generating...';
+
+      try {
+        // Send input to backend and display exactly what backend returns.
+        const payload = {
+          text: input,
+          category: currentCategory,
+          intensity: currentIntensity,
+          language: settings.language || 'hinglish+english'
+        };
+
+        const resp = await fetch('/roast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload)
+        });
+
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.error || 'Server error');
+        }
+
+        const data = await resp.json();
+        // Use exactly backend response. Expecting { roast: '...' }
+        currentRoast = data.roast || 'No roast generated';
+
+        displayRoast();
+
+        // Deduct points (only if not advance plan)
+        if (userData.plan !== 'advance') {
+          userData.points -= 1;
+          saveUserData();
+          updateUserUI();
+          checkLowPoints();
+        }
+
+        // Update stats
+        stats.total++;
+        stats.categories[currentCategory]++;
+        saveStats();
+
+        // Save to history (store backend roast text)
+        const intensityKey = currentIntensity === 1 ? 'mild' : currentIntensity === 2 ? 'medium' : 'savage';
+        if (saveHistory) {
+          saveToHistory(input, currentRoast, currentCategory, intensityKey);
+        }
+
+        showToast('Roast generated! 🔥', 'success');
+
+      } catch (err) {
+        console.error(err);
+        showToast('Roast failed: ' + (err.message || 'Server error'), 'error');
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = '🚀 Generate AI Roast (1 Point)';
+        isGenerating = false;
+      }
+    }
+
+    function displayRoast() {
+      const outputContainer = document.getElementById('output-container');
+      const roastText = document.getElementById('roast-text');
+      const mainApp = document.getElementById('main-app');
+      
+      roastText.classList.remove('animate-slide-up');
+      void roastText.offsetWidth;
+      roastText.classList.add('animate-slide-up');
+      
+      roastText.textContent = currentRoast;
+      document.getElementById('output-category').textContent = currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1);
+      document.getElementById('output-intensity').textContent = intensityLabels[currentIntensity];
+      
+      outputContainer.style.display = 'block';
+      
+      // Auto-scroll main app to show the fixed roast output
+      setTimeout(() => {
+        if (mainApp) {
+          mainApp.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 100);
+    }
+
+    // Apply settings
+    function applySettings() {
+      const roastText = document.getElementById('roast-text');
+      if (!roastText) return;
+      if (settings.textSize === 'large') roastText.style.fontSize = '28px';
+      else roastText.style.fontSize = '22px';
+    }
+
+    function loadSettings() {
+      try {
+        const s = JSON.parse(localStorage.getItem('roastSettings') || '{}');
+        if (s.textSize) settings.textSize = s.textSize;
+        if (s.language) settings.language = s.language;
+        if (typeof s.autoCopy === 'boolean') settings.autoCopy = s.autoCopy;
+      } catch (e) {}
+      applySettings();
+    }
+
+    function saveSettings() {
+      localStorage.setItem('roastSettings', JSON.stringify(settings));
+    }
+
+    // Copy button
+    document.getElementById('copy-btn').addEventListener('click', copyToClipboard);
+    
+    async function copyToClipboard() {
+      if (!currentRoast) {
+        showToast('Pehle roast generate karo! 😅', 'error');
+        return false;
+      }
+      // Try modern clipboard API first
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(currentRoast);
+          stats.copied++;
+          saveStats();
+          showToast('Copied!👍', 'success');
+          return true;
+        }
+      } catch (e) {
+        console.warn('Clipboard API failed', e);
+      }
+      // Fallback
+      return fallbackCopy(currentRoast);
+    }
+
+    function fallbackCopy(text) {
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        textArea.setSelectionRange(0, text.length);
+        const ok = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        if (ok) {
+          stats.copied++;
+          saveStats();
+          showToast('Copied!👍', 'success');
+          return true;
+        } else {
+          showToast('Copied!👍', 'success');
+          return false;
+        }
+      } catch (err) {
+        try { document.body.removeChild(textArea); } catch(e){}
+        showToast('Copied!👍', 'success');
+        return false;
+      }
+    }
+
+    // Settings modal
+    document.getElementById('settings-btn').addEventListener('click', () => {
+      openSettingsModal();
+    });
+
+    function openSettingsModal() {
+      // build modal
+      const modal = document.createElement('div');
+      modal.className = 'share-modal';
+      modal.id = 'settings-modal';
+      modal.innerHTML = `
+        <div class="share-content">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="color:#fff; font-size:18px; margin:0;">Settings</h3>
+            <button class="close-modal" style="background:none; border:none; color:#999; font-size:20px; cursor:pointer;">&times;</button>
+          </div>
+          <div style="display:grid; gap:12px; color:#ccc;">
+            <div>
+              <div style="font-weight:700; margin-bottom:6px;">Text Size</div>
+              <label style="margin-right:10px;"><input type="radio" name="textSize" value="real"> Real</label>
+              <label><input type="radio" name="textSize" value="large"> Large</label>
+            </div>
+            <div>
+              <div style="font-weight:700; margin-bottom:6px;">Language</div>
+              <label style="margin-right:10px;"><input type="radio" name="language" value="hinglish+english"> Hinglish + English</label>
+              <label><input type="radio" name="language" value="english"> English</label>
+            </div>
+            <div>
+              <label><input type="checkbox" id="auto-copy-checkbox"> Auto copy generated roast</label>
+            </div>
+            <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
+              <button id="settings-save" class="share-btn share-btn-copy">Save</button>
+              <button id="settings-logout" class="copy-btn" style="display:none;">Logout</button>
+              <button id="settings-login" class="copy-btn" style="display:none;">Login</button>
+              <button id="settings-signup" class="share-btn share-btn-copy" style="display:none; margin-right:0;">Sign Up</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('settings-modal-container').appendChild(modal);
+
+      // adjust settings buttons based on persistence and auth state
+      const settingsSignup = modal.querySelector('#settings-signup');
+      const settingsLogin = modal.querySelector('#settings-login');
+      const settingsLogout = modal.querySelector('#settings-logout');
+
+      // Configure visibility per user state:
+      // - Authenticated users: show Save, Logout, Login
+      // - Unauthenticated users: show Login and Sign Up; hide Save/Logout
+      const settingsSave = modal.querySelector('#settings-save');
+      const isGuestLike = !!userData.isGuest || userData.signupMethod === 'guest';
+
+      if (userData.isAuthenticated) {
+        // Authenticated: show Save, Logout, Login (all action buttons visible); hide Sign Up
+        if (settingsSave) settingsSave.style.display = '';
+        if (settingsLogout) settingsLogout.style.display = '';
+        if (settingsLogin) settingsLogin.style.display = '';
+        if (settingsSignup) settingsSignup.style.display = 'none';
+      } else {
+        // Guest / unauthenticated: show Save + Sign Up (per request), hide Logout and Login
+        if (settingsSave) settingsSave.style.display = '';
+        if (settingsLogout) settingsLogout.style.display = 'none';
+        if (settingsLogin) settingsLogin.style.display = 'none';
+        if (settingsSignup) settingsSignup.style.display = isGuestLike ? '' : 'none';
+      }
+
+      // set current values
+      const radiosSize = modal.querySelectorAll('input[name="textSize"]');
+      radiosSize.forEach(r => { if (r.value === settings.textSize) r.checked = true; r.addEventListener('change', () => { settings.textSize = r.value; }); });
+      const radiosLang = modal.querySelectorAll('input[name="language"]');
+      radiosLang.forEach(r => { if (r.value === settings.language) r.checked = true; r.addEventListener('change', () => { settings.language = r.value; }); });
+      const autoCb = modal.querySelector('#auto-copy-checkbox');
+      autoCb.checked = !!settings.autoCopy;
+      autoCb.addEventListener('change', () => { settings.autoCopy = autoCb.checked; });
+
+      modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+      modal.querySelector('#settings-save').addEventListener('click', () => {
+        applySettings();
+        saveSettings();
+        showToast('Settings saved', 'success');
+        modal.remove();
+      });
+
+      modal.querySelector('#settings-logout').addEventListener('click', async () => {
+        if (!confirm('Logout?')) return;
+        try { await fetch('/signout', { method: 'POST', credentials: 'include' }); } catch(e){ console.error(e); }
+        location.reload();
+      });
+
+      // Settings - Login: open landing page in login mode
+      modal.querySelector('#settings-login').addEventListener('click', () => {
+        authMode = 'login';
+        modal.remove();
+        showLandingPage();
+      });
+
+      // Settings - Sign Up (shown only for guest-like users): open landing page in signup mode
+      const settingsSignUpBtn = modal.querySelector('#settings-signup');
+      if (settingsSignUpBtn) {
+        settingsSignUpBtn.addEventListener('click', () => {
+          authMode = 'signup';
+          modal.remove();
+          showLandingPage();
+        });
+      }
+    }
+
+    // Share button
+    document.getElementById('share-btn').addEventListener('click', () => {
+      if (!currentRoast) {
+        showToast('Pehle roast generate karo! 😅', 'error');
+        return;
+      }
+
+      const shareText = encodeURIComponent(`${currentRoast}\n\n🔥 Roastyou.fun - Try and roast your friends!`);
+      
+      const modal = document.createElement('div');
+      modal.className = 'share-modal';
+      modal.innerHTML = `
+        <div class="share-content">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 style="color: #fff; font-size: 20px; font-weight: 600; margin: 0;">Share Roast 🔥</h3>
+            <button class="close-modal" style="background: none; border: none; color: #999; font-size: 32px; cursor: pointer; padding: 0; line-height: 1; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">&times;</button>
+          </div>
+          
+          <div style="display: grid; gap: 12px;">
+            <a href="https://wa.me/?text=${shareText}" target="_blank" rel="noopener noreferrer" class="share-btn share-btn-whatsapp">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+              WhatsApp
+            </a>
+            
+            <a href="https://twitter.com/intent/tweet?text=${shareText}" target="_blank" rel="noopener noreferrer" class="share-btn share-btn-twitter">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+              Twitter (X)
+            </a>
+            
+            <a href="https://t.me/share/url?text=${shareText}" target="_blank" rel="noopener noreferrer" class="share-btn share-btn-telegram">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+              </svg>
+              Telegram
+            </a>
+            
+            <button class="share-btn share-btn-copy copy-with-link">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+              </svg>
+              Copy with Link
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+
+      modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+      });
+
+      modal.querySelector('.copy-with-link').addEventListener('click', function() {
+        const fullText = `${currentRoast}\n\n🔥 Roastyou.fun - Try and roast your friends!`;
+        const textArea = document.createElement('textarea');
+        textArea.value = fullText;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        
+        try {
+          document.execCommand('copy');
+          this.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Copied!';
+          showToast('Copied with link! 📋', 'success');
+          setTimeout(() => modal.remove(), 1200);
+        } catch (err) {
+          showToast('Copy failed 😢', 'error');
+        }
+        
+        document.body.removeChild(textArea);
+      });
+    });
+
+    // Regenerate button
+    document.getElementById('regenerate-btn').addEventListener('click', () => {
+      const input = document.getElementById('user-input').value.trim();
+      if (input) generateRoast();
+    });
+
+    // History functions
+    function saveToHistory(input, roast, category, intensity) {
+      // If user is authenticated, backend already persists history on /roast.
+      // Just refresh UI. For unauthenticated guests, keep localStorage fallback.
+      if (userData.isAuthenticated && userData.email) {
+        loadHistory();
+        return;
+      }
+
+      const key = 'roastHistory';
+      const history = JSON.parse(localStorage.getItem(key) || '[]');
+      history.unshift({
+        id: Date.now(),
+        input,
+        roast,
+        category,
+        intensity,
+        timestamp: new Date().toISOString()
+      });
+      if (history.length > 50) history.pop();
+      localStorage.setItem(key, JSON.stringify(history));
+      loadHistory();
+    }
+
+    function loadHistory() {
+      const key = userData.isAuthenticated && userData.email ? `roastHistory_${userData.email}` : 'roastHistory';
+      const history = JSON.parse(localStorage.getItem(key) || '[]');
+      const historyList = document.getElementById('history-list');
+      
+      if (history.length === 0) {
+        historyList.innerHTML = `
+          <div class="text-center text-gray-500 py-12">
+            <div class="text-5xl mb-4">  </div>
+            <p>No roasts yet. Generate your first one!</p>
+          </div>
+        `;
+        return;
+      }
+
+      historyList.innerHTML = history.map(item => `
+        <div class="history-item" data-id="${item.id}">
+          <div class="flex justify-between items-start mb-2">
+            <div class="flex-1">
+              <div class="text-sm text-gray-500 mb-1">
+                ${getCategoryEmoji(item.category)} ${item.category}    ${item.intensity}
+              </div>
+              <div class="font-medium text-white mb-2">${escapeHtml(item.input)}</div>
+              <div class="text-gray-300">${escapeHtml(item.roast)}</div>
+            </div>
+            <button class="copy-btn text-xs ml-3" onclick="copyHistoryItem(\`${item.roast.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">
+              📋
+            </button>
+            <button class="copy-btn text-xs ml-2" onclick="deleteHistoryItem(${item.id})" title="Delete this roast">🗑️</button>
+          </div>
+          <div class="text-xs text-gray-600">
+            ${formatDate(item.timestamp)}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Migrate guest history (key: 'roastHistory') into authenticated user's history
+    function migrateGuestHistoryToUser() {
+      if (!userData.isAuthenticated || !userData.email) return;
+      const guestKey = 'roastHistory';
+      const userKey = `roastHistory_${userData.email}`;
+      try {
+        const guest = JSON.parse(localStorage.getItem(guestKey) || '[]');
+        if (!guest || guest.length === 0) return;
+        const userHistory = JSON.parse(localStorage.getItem(userKey) || '[]');
+        const existingIds = new Set((userHistory || []).map(i => i.id));
+        const newItems = (guest || []).filter(item => !existingIds.has(item.id));
+        const merged = [...newItems, ...(userHistory || [])];
+        // keep most recent 50
+        merged.sort((a, b) => b.id - a.id);
+        const finalList = merged.slice(0, 50);
+        localStorage.setItem(userKey, JSON.stringify(finalList));
+        // remove guest key to avoid duplicate migration
+        localStorage.removeItem(guestKey);
+        showToast('Your guest history was moved to your account', 'success');
+      } catch (e) {
+        console.error('History migration failed', e);
+      }
+    }
+
+    function deleteHistoryItem(id) {
+      if (!confirm('Delete this roast?')) return;
+      const key = userData.isAuthenticated && userData.email ? `roastHistory_${userData.email}` : 'roastHistory';
+      const history = JSON.parse(localStorage.getItem(key) || '[]');
+      const newHistory = history.filter(h => h.id !== id);
+      localStorage.setItem(key, JSON.stringify(newHistory));
+      loadHistory();
+      showToast('Roast deleted', 'success');
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    window.copyHistoryItem = function(roast) {
+      const textArea = document.createElement('textarea');
+      textArea.value = roast;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        showToast('Copied! 📋', 'success');
+      } catch (err) {
+        showToast('Copy failed 😢', 'error');
+      }
+      
+      document.body.removeChild(textArea);
+    };
+
+    function getCategoryEmoji(category) {
+      const emojis = { name: '👤', mood: '😊', habit: '🎯', situation: '💡' };
+      return emojis[category] || '   ';
+    }
+
+    function formatDate(timestamp) {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diff = now - date;
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+      
+      if (minutes < 1) return 'Just now';
+      if (minutes < 60) return `${minutes}m ago`;
+      if (hours < 24) return `${hours}h ago`;
+      if (days < 7) return `${days}d ago`;
+      return date.toLocaleDateString();
+    }
+
+    // Clear history
+    let clearHistoryTimeout;
+    document.getElementById('clear-history-btn').addEventListener('click', function() {
+      const key = userData.isAuthenticated && userData.email ? `roastHistory_${userData.email}` : 'roastHistory';
+      const historyList = JSON.parse(localStorage.getItem(key) || '[]');
+      if (historyList.length === 0) {
+        showToast('No history to clear!', 'error');
+        return;
+      }
+
+      const originalText = this.innerHTML;
+      
+      if (this.classList.contains('confirm-mode')) {
+        localStorage.removeItem(key);
+        loadHistory();
+        showToast('History cleared! 🗑', 'success');
+        this.classList.remove('confirm-mode');
+        this.innerHTML = originalText;
+        this.style.background = '';
+        this.style.borderColor = '';
+        clearTimeout(clearHistoryTimeout);
+      } else {
+        this.classList.add('confirm-mode');
+        this.innerHTML = '⚠️ Confirm Clear?';
+        this.style.background = '#FF6B6B';
+        this.style.borderColor = '#FF6B6B';
+        
+        clearHistoryTimeout = setTimeout(() => {
+          this.classList.remove('confirm-mode');
+          this.innerHTML = originalText;
+          this.style.background = '';
+          this.style.borderColor = '';
+        }, 3000);
+      }
+    });
+
+    // Stats functions
+    function saveStats() {
+      localStorage.setItem('roastStats', JSON.stringify(stats));
+      document.getElementById('total-roasts').textContent = stats.total;
+    }
+
+    function loadStats() {
+      const saved = localStorage.getItem('roastStats');
+      if (saved) {
+        stats = JSON.parse(saved);
+      }
+      document.getElementById('total-roasts').textContent = stats.total;
+    }
+
+    function updateStatsDisplay() {
+      document.getElementById('stat-total').textContent = stats.total;
+      document.getElementById('stat-copied').textContent = stats.copied;
+      
+      let maxCat = 'name';
+      let maxVal = 0;
+      for (let cat in stats.categories) {
+        if (stats.categories[cat] > maxVal) {
+          maxVal = stats.categories[cat];
+          maxCat = cat;
+        }
+      }
+      document.getElementById('stat-favorite').textContent = maxCat.charAt(0).toUpperCase() + maxCat.slice(1);
+      
+      const total = Object.values(stats.categories).reduce((a, b) => a + b, 0) || 1;
+      for (let cat in stats.categories) {
+        const count = stats.categories[cat];
+        const percent = (count / total) * 100;
+        document.getElementById(`stat-${cat}-count`).textContent = count;
+        document.getElementById(`stat-${cat}-bar`).style.width = percent + '%';
+      }
+    }
+
+    // Toast notifications
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      
+      if (type === 'success') {
+        toast.style.borderColor = '#22c55e';
+      } else if (type === 'error') {
+        toast.style.borderColor = '#ef4444';
+      }
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Initialize app
+    init();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b18c0725166a834',t:'MTc2NjMzNDQ5OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
